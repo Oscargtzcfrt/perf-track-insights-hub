@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useData } from "@/context/DataContext";
 import { useToast } from "@/components/ui/use-toast";
-import { Download, Upload } from "lucide-react";
+import { Download, Upload, FileDown } from "lucide-react";
 import * as XLSX from 'xlsx';
 
 const SettingsPage = () => {
@@ -42,6 +42,104 @@ const SettingsPage = () => {
       toast({
         title: "Error",
         description: "Error al exportar datos a Excel",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Download template Excel file with example data
+  const downloadTemplate = () => {
+    try {
+      // Create example data
+      const exampleData = {
+        people: [
+          { id: "p1", name: "Juan Pérez", email: "juan@example.com", departmentId: "d1" },
+          { id: "p2", name: "María García", email: "maria@example.com", departmentId: "d2" }
+        ],
+        departments: [
+          { id: "d1", name: "Ventas", kpiIds: ["k1", "k2"] },
+          { id: "d2", name: "Marketing", kpiIds: ["k2", "k3"] }
+        ],
+        kpis: [
+          { 
+            id: "k1", 
+            name: "Ventas Mensuales", 
+            description: "Total de ventas mensuales",
+            unit: "€",
+            optimumType: "higher",
+            variables: [
+              { name: "ventas", label: "Ventas" },
+              { name: "objetivo", label: "Objetivo" }
+            ],
+            formula: "ventas / objetivo * 100"
+          },
+          { 
+            id: "k2", 
+            name: "Satisfacción Cliente", 
+            description: "Puntuación de satisfacción del cliente",
+            unit: "%",
+            optimumType: "higher",
+            variables: [
+              { name: "puntuacion", label: "Puntuación" }
+            ],
+            formula: "puntuacion"
+          },
+          { 
+            id: "k3", 
+            name: "Costes Marketing", 
+            description: "Costes de marketing como % de ventas",
+            unit: "%",
+            optimumType: "lower",
+            variables: [
+              { name: "costes", label: "Costes" },
+              { name: "ventas", label: "Ventas" }
+            ],
+            formula: "costes / ventas * 100"
+          }
+        ],
+        kpiDataEntries: [
+          {
+            id: "e1",
+            personId: "p1",
+            departmentId: "d1",
+            kpiId: "k1",
+            period: { year: 2023, month: 1 },
+            variableValues: { "ventas": 15000, "objetivo": 10000 },
+            dateRecorded: new Date().toISOString()
+          },
+          {
+            id: "e2",
+            personId: "p2",
+            departmentId: "d2",
+            kpiId: "k2",
+            period: { year: 2023, month: 1 },
+            variableValues: { "puntuacion": 85 },
+            dateRecorded: new Date().toISOString()
+          }
+        ]
+      };
+      
+      // Create a new workbook
+      const wb = XLSX.utils.book_new();
+      
+      // Convert each data type to a worksheet and add to workbook
+      Object.entries(exampleData).forEach(([sheetName, sheetData]) => {
+        const ws = XLSX.utils.json_to_sheet(sheetData);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      });
+      
+      // Generate Excel file and trigger download
+      XLSX.writeFile(wb, `perftrack-template.xlsx`);
+      
+      toast({
+        title: "Éxito",
+        description: "Plantilla de datos descargada correctamente",
+      });
+    } catch (error) {
+      console.error("Error downloading template:", error);
+      toast({
+        title: "Error",
+        description: "Error al descargar la plantilla",
         variant: "destructive",
       });
     }
@@ -170,6 +268,10 @@ const SettingsPage = () => {
                   <Upload className="mr-2 h-4 w-4" /> Importar desde Excel
                 </Button>
               </div>
+              
+              <Button variant="secondary" onClick={downloadTemplate}>
+                <FileDown className="mr-2 h-4 w-4" /> Descargar Plantilla
+              </Button>
             </div>
             
             <div className="border-t pt-4 mt-4">
