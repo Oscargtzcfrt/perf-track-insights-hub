@@ -4,14 +4,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useData } from "@/context/DataContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Download, Upload } from "lucide-react";
+import * as XLSX from 'xlsx';
 
 const SettingsPage = () => {
   const { people, departments, kpis, kpiDataEntries, refreshData } = useData();
   const { toast } = useToast();
 
-  // Export all data to JSON file
+  // Export all data to Excel file
   const exportData = () => {
     try {
+      // Prepare data for Excel sheets
       const data = {
         people,
         departments,
@@ -19,33 +21,33 @@ const SettingsPage = () => {
         kpiDataEntries
       };
       
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
+      // Create a new workbook
+      const wb = XLSX.utils.book_new();
       
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `perftrack-export-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
+      // Convert each data type to a worksheet and add to workbook
+      Object.entries(data).forEach(([sheetName, sheetData]) => {
+        const ws = XLSX.utils.json_to_sheet(sheetData);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      });
       
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Generate Excel file and trigger download
+      XLSX.writeFile(wb, `perftrack-export-${new Date().toISOString().split('T')[0]}.xlsx`);
       
       toast({
-        title: "Success",
-        description: "Data exported successfully",
+        title: "Éxito",
+        description: "Datos exportados correctamente a Excel",
       });
     } catch (error) {
-      console.error("Error exporting data:", error);
+      console.error("Error exporting data to Excel:", error);
       toast({
         title: "Error",
-        description: "Failed to export data",
+        description: "Error al exportar datos a Excel",
         variant: "destructive",
       });
     }
   };
 
-  // Import data from JSON file
+  // Import data from Excel file
   const importData = (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       const file = event.target.files?.[0];
@@ -54,46 +56,56 @@ const SettingsPage = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const content = e.target?.result as string;
-          const data = JSON.parse(content);
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
           
-          // Validate data structure
-          if (!data.people || !data.departments || !data.kpis) {
-            throw new Error("Invalid data format");
+          const importedData: Record<string, any[]> = {};
+          
+          // Process each sheet in the workbook
+          workbook.SheetNames.forEach(sheetName => {
+            // Convert sheet data to JSON
+            const worksheet = workbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+            importedData[sheetName.toLowerCase()] = jsonData;
+          });
+          
+          // Validate required data sheets
+          if (!importedData.people || !importedData.departments || !importedData.kpis) {
+            throw new Error("Formato de archivo inválido: faltan hojas requeridas");
           }
           
           // Save to localStorage
-          localStorage.setItem('perftrack_people', JSON.stringify(data.people));
-          localStorage.setItem('perftrack_departments', JSON.stringify(data.departments));
-          localStorage.setItem('perftrack_kpis', JSON.stringify(data.kpis));
+          localStorage.setItem('perftrack_people', JSON.stringify(importedData.people));
+          localStorage.setItem('perftrack_departments', JSON.stringify(importedData.departments));
+          localStorage.setItem('perftrack_kpis', JSON.stringify(importedData.kpis));
           
-          if (data.kpiDataEntries) {
-            localStorage.setItem('perftrack_data_entries', JSON.stringify(data.kpiDataEntries));
+          if (importedData.kpidataentries) {
+            localStorage.setItem('perftrack_data_entries', JSON.stringify(importedData.kpidataentries));
           }
           
           // Refresh data
           refreshData();
           
           toast({
-            title: "Success",
-            description: "Data imported successfully",
+            title: "Éxito",
+            description: "Datos importados correctamente desde Excel",
           });
         } catch (error) {
-          console.error("Error parsing import file:", error);
+          console.error("Error parsing Excel file:", error);
           toast({
             title: "Error",
-            description: "Invalid import file format",
+            description: "Formato de archivo Excel inválido",
             variant: "destructive",
           });
         }
       };
       
-      reader.readAsText(file);
+      reader.readAsBinaryString(file);
     } catch (error) {
-      console.error("Error importing data:", error);
+      console.error("Error importing Excel data:", error);
       toast({
         title: "Error",
-        description: "Failed to import data",
+        description: "Error al importar datos desde Excel",
         variant: "destructive",
       });
     }
@@ -104,7 +116,7 @@ const SettingsPage = () => {
 
   // Reset all data
   const resetData = () => {
-    if (confirm("Are you sure you want to reset all data? This cannot be undone!")) {
+    if (confirm("¿Estás seguro de que deseas resetear todos los datos? ¡Esta acción no se puede deshacer!")) {
       try {
         localStorage.removeItem('perftrack_people');
         localStorage.removeItem('perftrack_departments');
@@ -115,14 +127,14 @@ const SettingsPage = () => {
         refreshData();
         
         toast({
-          title: "Success",
-          description: "Data reset successfully",
+          title: "Éxito",
+          description: "Datos reseteados correctamente",
         });
       } catch (error) {
         console.error("Error resetting data:", error);
         toast({
           title: "Error",
-          description: "Failed to reset data",
+          description: "Error al resetear datos",
           variant: "destructive",
         });
       }
@@ -131,42 +143,42 @@ const SettingsPage = () => {
   
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Settings</h1>
+      <h1 className="text-3xl font-bold">Configuración</h1>
       
       <Card>
         <CardHeader>
-          <CardTitle>Data Management</CardTitle>
+          <CardTitle>Gestión de Datos</CardTitle>
           <CardDescription>
-            Export, import, or reset your PerfTrack data
+            Exporta, importa o resetea tus datos de PerfTrack
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <Button onClick={exportData}>
-                <Download className="mr-2 h-4 w-4" /> Export All Data
+                <Download className="mr-2 h-4 w-4" /> Exportar a Excel
               </Button>
               
               <div className="relative">
                 <input
                   type="file"
-                  accept=".json"
+                  accept=".xlsx, .xls"
                   onChange={importData}
                   className="absolute inset-0 w-full opacity-0 cursor-pointer"
                 />
                 <Button variant="outline">
-                  <Upload className="mr-2 h-4 w-4" /> Import Data
+                  <Upload className="mr-2 h-4 w-4" /> Importar desde Excel
                 </Button>
               </div>
             </div>
             
             <div className="border-t pt-4 mt-4">
-              <h3 className="text-lg font-medium mb-2">Danger Zone</h3>
+              <h3 className="text-lg font-medium mb-2">Zona de Peligro</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                This action will permanently delete all your data and cannot be undone.
+                Esta acción eliminará permanentemente todos tus datos y no se puede deshacer.
               </p>
               <Button variant="destructive" onClick={resetData}>
-                Reset All Data
+                Resetear Todos los Datos
               </Button>
             </div>
           </div>
@@ -175,18 +187,18 @@ const SettingsPage = () => {
       
       <Card>
         <CardHeader>
-          <CardTitle>About PerfTrack</CardTitle>
+          <CardTitle>Acerca de PerfTrack</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             <p>
-              PerfTrack is a simple KPI performance tracking application.
+              PerfTrack es una aplicación simple para seguimiento de desempeño por KPIs.
             </p>
             <p>
-              Version: 1.0.0
+              Versión: 1.0.0
             </p>
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} PerfTrack. All rights reserved.
+              © {new Date().getFullYear()} PerfTrack. Todos los derechos reservados.
             </p>
           </div>
         </CardContent>
