@@ -7,10 +7,11 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
-import { Edit, Plus, Search, Trash2 } from "lucide-react";
+import { Edit, Plus, Search, Trash2, BarChart } from "lucide-react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Link } from "react-router-dom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -132,6 +133,11 @@ const PeoplePage = () => {
                   <div className="text-sm text-muted-foreground mt-1">{person.email}</div>
                 </div>
                 <div className="flex gap-2">
+                  <Link to={`/performance/person/${person.id}`}>
+                    <Button variant="ghost" size="icon">
+                      <BarChart className="h-4 w-4 text-primary" />
+                    </Button>
+                  </Link>
                   <Button variant="ghost" size="icon" onClick={() => handleEditClick(person)}>
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -160,6 +166,14 @@ const PeoplePage = () => {
             <CardContent>
               <div className="text-sm">
                 <span className="font-medium">Department:</span> {getDepartmentName(person.departmentId)}
+              </div>
+              <div className="mt-2">
+                <Link 
+                  to={`/performance/person/${person.id}`}
+                  className="text-sm text-primary hover:underline flex items-center gap-1"
+                >
+                  <BarChart className="h-3 w-3" /> View Performance
+                </Link>
               </div>
             </CardContent>
           </Card>
