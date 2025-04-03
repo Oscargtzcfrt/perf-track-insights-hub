@@ -115,36 +115,39 @@ const KpiSummaryCard = ({
                 },
               }}
             >
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={data}
-                    cx="50%"
-                    cy="50%"
-                    startAngle={180}
-                    endAngle={0}
-                    innerRadius="70%"
-                    outerRadius="100%"
-                    paddingAngle={0}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    <Cell key="progress" fill="var(--color-progress)" />
-                    <Cell key="remaining" fill="var(--color-remaining)" />
-                  </Pie>
-                  <ChartTooltip 
-                    content={<ChartTooltipContent formatter={(value) => [`${value}%`]} />} 
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <span className="text-xl font-bold">{Math.round(percentage)}%</span>
-                  <div className="flex justify-center mt-1">
-                    {getStatusIcon(percentage)}
+              {/* Wrap the child elements in a fragment to make it a single child */}
+              <>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={data}
+                      cx="50%"
+                      cy="50%"
+                      startAngle={180}
+                      endAngle={0}
+                      innerRadius="70%"
+                      outerRadius="100%"
+                      paddingAngle={0}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      <Cell key="progress" fill="var(--color-progress)" />
+                      <Cell key="remaining" fill="var(--color-remaining)" />
+                    </Pie>
+                    <ChartTooltip 
+                      content={<ChartTooltipContent formatter={(value) => [`${value}%`]} />} 
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <span className="text-xl font-bold">{Math.round(percentage)}%</span>
+                    <div className="flex justify-center mt-1">
+                      {getStatusIcon(percentage)}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </>
             </ChartContainer>
           </div>
         </div>
