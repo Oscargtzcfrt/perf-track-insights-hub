@@ -7,11 +7,12 @@ import { ChevronUp, ChevronDown, Minus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PersonPerformanceView from "@/components/dashboard/PersonPerformanceView";
 import DepartmentPersonView from "@/components/dashboard/DepartmentPersonView";
+import EnhancedDashboardView from "@/components/dashboard/EnhancedDashboardView";
 
 const Dashboard = () => {
   const { kpis, departments, people, kpiDataEntries, calculateKpiValue } = useData();
   const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
-  const [activeTab, setActiveTab] = useState("departments");
+  const [activeTab, setActiveTab] = useState("enhanced");
   
   // Calculate stats
   const totalPeople = people.length;
@@ -194,7 +195,7 @@ const Dashboard = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         
-        {activeTab === "departments" && (
+        {(activeTab === "departments" || activeTab === "classic") && (
           <div className="flex items-center space-x-2">
             <span className="text-sm text-muted-foreground">Department:</span>
             <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
@@ -250,14 +251,20 @@ const Dashboard = () => {
       
       {/* Performance Views Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="departments">Department View</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="enhanced">Enhanced View</TabsTrigger>
+          <TabsTrigger value="classic">Classic View</TabsTrigger>
           <TabsTrigger value="people">People View</TabsTrigger>
           <TabsTrigger value="dept-people">Dept-Person View</TabsTrigger>
         </TabsList>
         
-        {/* Department View Tab */}
-        <TabsContent value="departments" className="space-y-6">
+        {/* Enhanced Dashboard View Tab */}
+        <TabsContent value="enhanced" className="space-y-6">
+          <EnhancedDashboardView />
+        </TabsContent>
+
+        {/* Classic Department View Tab - Original Dashboard */}
+        <TabsContent value="classic" className="space-y-6">
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="card-hover">
