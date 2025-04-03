@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useData } from "@/context/DataContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -116,11 +115,8 @@ const KpiEntryPage = () => {
                     onSelect={(date) => date && setSelectedDate(date)}
                     initialFocus
                     className={cn("p-3 pointer-events-auto")}
-                    // We only need month view
                     showOutsideDays={false}
-                    month={selectedDate}
-                    showMonthYearPicker={false}
-                    showDateDisplay={false}
+                    defaultMonth={selectedDate}
                   />
                 </PopoverContent>
               </Popover>
