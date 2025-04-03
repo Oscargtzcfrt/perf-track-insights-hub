@@ -73,4 +73,3 @@ export interface DepartmentPerformance {
   peopleCount: number;
   kpiCount: number;
 }
-

@@ -24,7 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { KpiOptimumType } from "@/types/models";
+import { KpiOptimumType, KpiVariable } from "@/types/models";
 
 const variableSchema = z.object({
   name: z.string().min(1, "Variable name is required"),
@@ -75,7 +75,7 @@ const KpisPage = () => {
         description: values.description || "",
         unit: values.unit,
         optimumType: values.optimumType,
-        variables: values.variables,
+        variables: values.variables as KpiVariable[], // Ensure variables match KpiVariable type
         formula: values.formula,
       });
     } else {
@@ -84,7 +84,7 @@ const KpisPage = () => {
         description: values.description || "",
         unit: values.unit,
         optimumType: values.optimumType,
-        variables: values.variables,
+        variables: values.variables as KpiVariable[], // Ensure variables match KpiVariable type
         formula: values.formula,
       });
     }
