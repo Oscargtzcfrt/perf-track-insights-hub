@@ -6,6 +6,7 @@ import {
   Settings,
   Users,
   Activity,
+  FileInput,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { Dispatch, SetStateAction } from "react";
@@ -41,6 +42,11 @@ const sidebarItems: SidebarItemProps[] = [
     href: "/kpis",
     label: "KPIs",
     icon: <ListChecks className="h-4 w-4" />,
+  },
+  {
+    href: "/kpi-entry",
+    label: "KPI Entry",
+    icon: <FileInput className="h-4 w-4" />,
   },
   {
     href: "/performance",
