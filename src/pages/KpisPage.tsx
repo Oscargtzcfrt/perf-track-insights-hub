@@ -71,10 +71,22 @@ const KpisPage = () => {
     if (currentKpi) {
       updateKpi({
         id: currentKpi.id,
-        ...values,
+        name: values.name,
+        description: values.description || "",
+        unit: values.unit,
+        optimumType: values.optimumType,
+        variables: values.variables,
+        formula: values.formula,
       });
     } else {
-      addKpi(values);
+      addKpi({
+        name: values.name,
+        description: values.description || "",
+        unit: values.unit,
+        optimumType: values.optimumType,
+        variables: values.variables,
+        formula: values.formula,
+      });
     }
     
     setIsDialogOpen(false);

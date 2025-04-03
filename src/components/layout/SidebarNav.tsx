@@ -43,16 +43,12 @@ export function SidebarNav({ isOpen, setIsOpen }: SidebarNavProps) {
       className={cn(
         "border-r bg-card fixed inset-y-0 z-20 flex flex-col transition-all duration-300 ease-in-out",
         isOpen ? "w-64" : "w-[70px]",
-        "md:left-0 md:relative"
+        "md:left-0 md:relative md:transform-none md:visible"
       )}
       style={{
         boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05)",
         transform: isOpen ? "translateX(0)" : "translateX(-100%)",
         visibility: isOpen ? "visible" : "hidden",
-        "@media (min-width: 768px)": {
-          transform: "translateX(0)",
-          visibility: "visible",
-        },
       }}
     >
       <div className="flex h-14 items-center border-b px-3 justify-between">

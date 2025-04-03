@@ -50,10 +50,16 @@ const PeoplePage = () => {
     if (currentPerson) {
       updatePerson({
         id: currentPerson.id,
-        ...values,
+        name: values.name,
+        email: values.email,
+        departmentId: values.departmentId,
       });
     } else {
-      addPerson(values);
+      addPerson({
+        name: values.name,
+        email: values.email,
+        departmentId: values.departmentId,
+      });
     }
     
     setIsDialogOpen(false);
