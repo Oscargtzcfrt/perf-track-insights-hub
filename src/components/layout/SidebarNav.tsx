@@ -1,18 +1,24 @@
+
 import {
   Home,
   LayoutDashboard,
   ListChecks,
   Settings,
-  User,
   Users,
   Activity,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { Dispatch, SetStateAction } from "react";
 
 interface SidebarItemProps {
   href: string;
   label: string;
   icon: React.ReactNode;
+}
+
+interface SidebarNavProps {
+  isOpen: boolean;
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 const sidebarItems: SidebarItemProps[] = [
@@ -48,9 +54,9 @@ const sidebarItems: SidebarItemProps[] = [
   },
 ];
 
-export const SidebarNav = () => {
+export const SidebarNav = ({ isOpen, setIsOpen }: SidebarNavProps) => {
   return (
-    <div className="flex flex-col space-y-1">
+    <div className={`flex flex-col space-y-1 ${isOpen ? 'w-64' : 'w-16'} transition-all duration-300 p-2 border-r border-border h-full`}>
       {sidebarItems.map((item) => (
         <NavLink
           key={item.href}
@@ -64,7 +70,7 @@ export const SidebarNav = () => {
           }
         >
           {item.icon}
-          <span>{item.label}</span>
+          {isOpen && <span>{item.label}</span>}
         </NavLink>
       ))}
     </div>

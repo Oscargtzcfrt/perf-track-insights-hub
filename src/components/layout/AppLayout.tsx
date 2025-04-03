@@ -21,7 +21,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             variant="ghost"
             size="icon"
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="mr-4 md:hidden"
+            className="mr-4"
           >
             <Menu className="h-5 w-5" />
           </Button>
