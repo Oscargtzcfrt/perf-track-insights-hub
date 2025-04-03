@@ -1,14 +1,17 @@
-
 import { useData } from "@/context/DataContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, LineChart, ResponsiveContainer, XAxis, YAxis, Bar, CartesianGrid, Tooltip, Legend, Line } from "recharts";
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronUp, ChevronDown, Minus } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PersonPerformanceView from "@/components/dashboard/PersonPerformanceView";
+import DepartmentPersonView from "@/components/dashboard/DepartmentPersonView";
 
 const Dashboard = () => {
   const { kpis, departments, people, kpiDataEntries, calculateKpiValue } = useData();
   const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState("departments");
   
   // Calculate stats
   const totalPeople = people.length;
@@ -179,6 +182,7 @@ const Dashboard = () => {
   // Sort department performance
   departmentPerformance.sort((a, b) => b.score - a.score);
   
+  // Status icon helper function (used across various components)
   const getStatusIcon = (score: number) => {
     if (score >= 70) return <ChevronUp className="text-green-500" />;
     if (score >= 40) return <Minus className="text-yellow-500" />;
@@ -190,22 +194,25 @@ const Dashboard = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-muted-foreground">Department:</span>
-          <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All Departments" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Departments</SelectItem>
-              {departments.map(dept => (
-                <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {activeTab === "departments" && (
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-muted-foreground">Department:</span>
+            <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="All Departments" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Departments</SelectItem>
+                {departments.map(dept => (
+                  <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
       
+      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="card-hover">
           <CardHeader className="pb-2">
@@ -241,109 +248,134 @@ const Dashboard = () => {
         </Card>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="card-hover">
-          <CardHeader>
-            <CardTitle>KPI Performance</CardTitle>
-            <CardDescription>Current period average values</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              {barChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={barChartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip 
-                      formatter={(value, name, props) => [`${value} ${props.payload.unit}`, name]}
-                    />
-                    <Legend />
-                    <Bar dataKey="value" fill="#3f9ae0" name="Value" />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center text-muted-foreground">
-                  No KPI data available for the selected department
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Performance Views Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="departments">Department View</TabsTrigger>
+          <TabsTrigger value="people">People View</TabsTrigger>
+          <TabsTrigger value="dept-people">Dept-Person View</TabsTrigger>
+        </TabsList>
         
-        <Card className="card-hover">
-          <CardHeader>
-            <CardTitle>KPI Trends</CardTitle>
-            <CardDescription>Last 6 months</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              {trendData.some(item => Object.keys(item).length > 1) ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={trendData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    {kpis.slice(0, 3).map((kpi, index) => (
-                      <Line
-                        key={kpi.id}
-                        type="monotone"
-                        dataKey={kpi.name}
-                        stroke={index === 0 ? "#3f9ae0" : index === 1 ? "#10b981" : "#f59e0b"}
-                        activeDot={{ r: 8 }}
-                      />
-                    ))}
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center text-muted-foreground">
-                  No historical KPI data available
+        {/* Department View Tab */}
+        <TabsContent value="departments" className="space-y-6">
+          {/* Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="card-hover">
+              <CardHeader>
+                <CardTitle>KPI Performance</CardTitle>
+                <CardDescription>Current period average values</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  {barChartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={barChartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip 
+                          formatter={(value, name, props) => [`${value} ${props.payload.unit}`, name]}
+                        />
+                        <Legend />
+                        <Bar dataKey="value" fill="#3f9ae0" name="Value" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-muted-foreground">
+                      No KPI data available for the selected department
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <Card className="card-hover">
-        <CardHeader>
-          <CardTitle>Department Performance</CardTitle>
-          <CardDescription>Overall KPI achievement by department</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="py-3 px-4 text-left">Department</th>
-                  <th className="py-3 px-4 text-left">People</th>
-                  <th className="py-3 px-4 text-left">KPIs</th>
-                  <th className="py-3 px-4 text-left">Performance</th>
-                  <th className="py-3 px-4 text-left">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {departmentPerformance.map((dept) => (
-                  <tr key={dept.department.id} className="border-b hover:bg-muted/50">
-                    <td className="py-3 px-4 font-medium">{dept.department.name}</td>
-                    <td className="py-3 px-4">{dept.peopleCount}</td>
-                    <td className="py-3 px-4">{dept.kpiCount}</td>
-                    <td className="py-3 px-4">{dept.score.toFixed(1)}%</td>
-                    <td className="py-3 px-4 flex items-center">
-                      {getStatusIcon(dept.score)}
-                      <span className="ml-1">
-                        {dept.score >= 70 ? "Good" : dept.score >= 40 ? "Average" : "Needs Improvement"}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              </CardContent>
+            </Card>
+            
+            {/* KPI Trends Chart */}
+            {trendData.some(item => Object.keys(item).length > 1) ? (
+              <Card className="card-hover">
+                <CardHeader>
+                  <CardTitle>KPI Trends</CardTitle>
+                  <CardDescription>Last 6 months</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={trendData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        {kpis.slice(0, 3).map((kpi, index) => (
+                          <Line
+                            key={kpi.id}
+                            type="monotone"
+                            dataKey={kpi.name}
+                            stroke={index === 0 ? "#3f9ae0" : index === 1 ? "#10b981" : "#f59e0b"}
+                            activeDot={{ r: 8 }}
+                          />
+                        ))}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="h-full flex items-center justify-center text-muted-foreground">
+                No historical KPI data available
+              </div>
+            )}
+            
+            {/* Department Performance Table */}
+            <Card className="card-hover">
+              <CardHeader>
+                <CardTitle>Department Performance</CardTitle>
+                <CardDescription>Overall KPI achievement by department</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="py-3 px-4 text-left">Department</th>
+                        <th className="py-3 px-4 text-left">People</th>
+                        <th className="py-3 px-4 text-left">KPIs</th>
+                        <th className="py-3 px-4 text-left">Performance</th>
+                        <th className="py-3 px-4 text-left">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {departmentPerformance.map((dept) => (
+                        <tr key={dept.department.id} className="border-b hover:bg-muted/50">
+                          <td className="py-3 px-4 font-medium">{dept.department.name}</td>
+                          <td className="py-3 px-4">{dept.peopleCount}</td>
+                          <td className="py-3 px-4">{dept.kpiCount}</td>
+                          <td className="py-3 px-4">{dept.score.toFixed(1)}%</td>
+                          <td className="py-3 px-4 flex items-center">
+                            {getStatusIcon(dept.score)}
+                            <span className="ml-1">
+                              {dept.score >= 70 ? "Good" : dept.score >= 40 ? "Average" : "Needs Improvement"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
+        
+        {/* People View Tab */}
+        <TabsContent value="people">
+          <PersonPerformanceView />
+        </TabsContent>
+        
+        {/* Department-Person View Tab */}
+        <TabsContent value="dept-people">
+          <DepartmentPersonView />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -44,3 +44,33 @@ export interface KpiDataEntry {
   variableValues: Record<string, number>;
   dateRecorded: string;
 }
+
+// New types for performance analysis
+
+export interface PerformanceResult {
+  kpiId: string;
+  kpiName: string;
+  rawValue: number | null;
+  normalizedScore: number;
+  unit: string;
+}
+
+export interface PersonPerformance {
+  personId: string;
+  personName: string;
+  departmentId: string;
+  departmentName: string;
+  overallScore: number;
+  kpiResults: PerformanceResult[];
+  lastUpdated: Date | null;
+}
+
+export interface DepartmentPerformance {
+  departmentId: string;
+  departmentName: string;
+  overallScore: number;
+  kpiResults: PerformanceResult[];
+  peopleCount: number;
+  kpiCount: number;
+}
+
